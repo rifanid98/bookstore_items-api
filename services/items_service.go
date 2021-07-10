@@ -6,8 +6,6 @@ import (
 	resp "github.com/rifanid98/bookstore_helper-go/response"
 )
 
-var ItemService IItemService = &itemService{}
-
 type IItemService interface {
 	Create(*items.Item) (*items.Item, *resp.RestErr)
 	Get(string) (*items.Item, *resp.RestErr)
@@ -15,6 +13,8 @@ type IItemService interface {
 
 type itemService struct {
 }
+
+var Items IItemService = &itemService{}
 
 func (s *itemService) Create(*items.Item) (*items.Item, *resp.RestErr) {
 	return nil, resp.NotImplemented("")

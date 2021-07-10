@@ -3,9 +3,12 @@ package controllers
 import (
 	"bookstore_items-api/domain/items"
 	"bookstore_items-api/services"
-	"fmt"
+	"bookstore_items-api/utils"
+	"encoding/json"
+	"io/ioutil"
 	"net/http"
 
+	resp "github.com/rifanid98/bookstore_helper-go/response"
 	"github.com/rifanid98/bookstore_oauth-go/oauth"
 )
 
@@ -19,22 +22,33 @@ type itemsController struct{}
 var Items IItemsController = &itemsController{}
 
 func (c *itemsController) Create(w http.ResponseWriter, r *http.Request) {
-	if err := oauth.AuthenticateRequest(r); err != nil {
-		//TODO: return error to the user
+	if restErr := oauth.AuthenticateRequest(r); restErr != nil {
+		utils.MyHttp.ToJsonRestErr(w, (*resp.RestErr)(restErr))
 		return
 	}
 
-	item := &items.Item{
-		Seller: oauth.GetCallerId(r),
-	}
-
-	res, err := services.ItemService.Create(item)
+	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
-		//TODO: return error json to the user
+		utils.MyHttp.ToJsonRestErr(w, resp.InternalServerError("Failed to read body"))
+		return
+	}
+	defer r.Body.Close()
+
+	var item items.Item
+	if err := json.Unmarshal(body, &item); err != nil {
+		utils.MyHttp.ToJsonRestErr(w, resp.BadRequest("Invalid body"))
+		return
 	}
 
-	fmt.Println(res)
-	//TODO: return 201
+	item.Seller = oauth.GetCallerId(r)
+
+	res, restErr := services.Items.Create(&item)
+	if err != nil {
+		utils.MyHttp.ToJsonRestErr(w, restErr)
+		return
+	}
+
+	utils.MyHttp.ToJsonRest(w, res, http.StatusCreated)
 }
 
 func (c *itemsController) Get(w http.ResponseWriter, r *http.Request) {

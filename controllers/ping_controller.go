@@ -1,6 +1,11 @@
 package controllers
 
-import "net/http"
+import (
+	"bookstore_items-api/utils"
+	"net/http"
+
+	"github.com/rifanid98/bookstore_helper-go/response"
+)
 
 const pong = "PONG"
 
@@ -13,6 +18,5 @@ type pingController struct{}
 var Ping IPingController = &pingController{}
 
 func (c *pingController) Ping(w http.ResponseWriter, r *http.Request) {
-	w.WriteHeader(http.StatusOK)
-	w.Write([]byte(pong))
+	utils.MyHttp.ToJsonRest(w, response.Success("Pong"), http.StatusOK)
 }
