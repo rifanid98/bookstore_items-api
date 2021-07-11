@@ -1,2 +1,17 @@
 GET http://localhost:8002/ping
 ###
+POST http://localhost:8002/items?token_id=76434771d4fa6e6176a38959380938a9
+Content-Type: application/json
+
+{
+  "id": "1",
+  "title": "title",
+  "description": {
+    "plain_text": "plain_text"
+  },
+  "price": 1000,
+  "available_quantity": 1,
+  "sold_quantity": 1,
+  "status": "status"
+}
+###

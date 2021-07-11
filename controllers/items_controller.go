@@ -5,6 +5,7 @@ import (
 	"bookstore_items-api/services"
 	"bookstore_items-api/utils"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 
@@ -27,6 +28,12 @@ func (c *itemsController) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	sellerId := oauth.GetCallerId(r)
+	if sellerId == 0 {
+		utils.MyHttp.ToJsonRestErr(w, resp.Unauthorized(""))
+		return
+	}
+
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		utils.MyHttp.ToJsonRestErr(w, resp.InternalServerError("Failed to read body"))
@@ -36,11 +43,12 @@ func (c *itemsController) Create(w http.ResponseWriter, r *http.Request) {
 
 	var item items.Item
 	if err := json.Unmarshal(body, &item); err != nil {
+		fmt.Println(err.Error())
 		utils.MyHttp.ToJsonRestErr(w, resp.BadRequest("Invalid body"))
 		return
 	}
 
-	item.Seller = oauth.GetCallerId(r)
+	item.Seller = sellerId
 
 	res, restErr := services.Items.Create(&item)
 	if err != nil {
