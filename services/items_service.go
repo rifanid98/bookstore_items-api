@@ -9,6 +9,7 @@ import (
 type IItemService interface {
 	Create(*items.Item) (*items.Item, *resp.RestErr)
 	Get(string) (*items.Item, *resp.RestErr)
+	GetById(string) (*items.Item, *resp.RestErr)
 }
 
 type itemService struct {
@@ -26,6 +27,26 @@ func (s *itemService) Create(item *items.Item) (*items.Item, *resp.RestErr) {
 	return item, nil
 }
 
-func (s *itemService) Get(a string) (*items.Item, *resp.RestErr) {
+func (s *itemService) Get(id string) (*items.Item, *resp.RestErr) {
+	item := &items.Item{
+		Id: id,
+	}
+
+	if err := item.Get(); err != nil {
+		return nil, err
+	}
+
 	return nil, resp.NotImplemented("")
+}
+
+func (s *itemService) GetById(id string) (*items.Item, *resp.RestErr) {
+	item := &items.Item{
+		Id: id,
+	}
+
+	if err := item.GetById(); err != nil {
+		return nil, err
+	}
+
+	return item, nil
 }

@@ -12,6 +12,7 @@ import (
 type IClient interface {
 	setClient(*elastic.Client)
 	Index(string, interface{}) (*elastic.IndexResponse, error)
+	Get(string, string) (*elastic.GetResult, error)
 }
 
 type esClient struct {
@@ -55,6 +56,43 @@ func (c *esClient) Index(index string, doc interface{}) (*elastic.IndexResponse,
 			err,
 		)
 		return nil, err
+	}
+
+	return res, nil
+}
+
+func (c *esClient) Get(index string) (*elastic.GetResult, error) {
+	res, err := c.client.Get().
+		Index(index).
+		Type("_doc").
+		Do(context.Background())
+
+	if err != nil {
+		logger.Error(fmt.Sprintf("error when trying to get data"), err)
+		return nil, err
+	}
+
+	if !res.Found {
+		return nil, nil
+	}
+
+	return res, nil
+}
+
+func (c *esClient) GetById(index string, id string) (*elastic.GetResult, error) {
+	res, err := c.client.Get().
+		Index(index).
+		Type("_doc").
+		Id(id).
+		Do(context.Background())
+
+	if err != nil {
+		logger.Error(fmt.Sprintf("error when trying to get id %s", id), err)
+		return nil, err
+	}
+
+	if !res.Found {
+		return nil, nil
 	}
 
 	return res, nil

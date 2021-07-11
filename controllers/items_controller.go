@@ -8,7 +8,9 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"strings"
 
+	"github.com/gorilla/mux"
 	resp "github.com/rifanid98/bookstore_helper-go/response"
 	"github.com/rifanid98/bookstore_oauth-go/oauth"
 )
@@ -16,6 +18,7 @@ import (
 type IItemsController interface {
 	Create(w http.ResponseWriter, r *http.Request)
 	Get(w http.ResponseWriter, r *http.Request)
+	GetById(w http.ResponseWriter, r *http.Request)
 }
 
 type itemsController struct{}
@@ -61,4 +64,17 @@ func (c *itemsController) Create(w http.ResponseWriter, r *http.Request) {
 
 func (c *itemsController) Get(w http.ResponseWriter, r *http.Request) {
 
+}
+
+func (c *itemsController) GetById(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	id := strings.TrimSpace(vars["id"])
+
+	item, err := services.Items.GetById(id)
+	if err != nil {
+		utils.MyHttp.ToJsonRestErr(w, err)
+		return
+	}
+
+	utils.MyHttp.ToJsonRestResp(w, resp.Success(item))
 }
