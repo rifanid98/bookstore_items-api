@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"bookstore_items-api/domain/esqueries"
 	"bookstore_items-api/domain/items"
 	"bookstore_items-api/services"
 	"bookstore_items-api/utils"
@@ -18,6 +19,7 @@ import (
 type IItemsController interface {
 	Create(w http.ResponseWriter, r *http.Request)
 	Get(w http.ResponseWriter, r *http.Request)
+	Search(w http.ResponseWriter, r *http.Request)
 	GetById(w http.ResponseWriter, r *http.Request)
 }
 
@@ -64,6 +66,30 @@ func (c *itemsController) Create(w http.ResponseWriter, r *http.Request) {
 
 func (c *itemsController) Get(w http.ResponseWriter, r *http.Request) {
 
+}
+
+func (c *itemsController) Search(w http.ResponseWriter, r *http.Request) {
+	bytes, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		utils.MyHttp.ToJsonRestErr(w, resp.BadRequest("invalid json body"))
+		return
+	}
+	defer r.Body.Close()
+
+	query := &esqueries.EsQuery{}
+	if err := json.Unmarshal(bytes, &query); err != nil {
+		fmt.Println(err.Error())
+		utils.MyHttp.ToJsonRestErr(w, resp.BadRequest("failed to unmarshal json"))
+		return
+	}
+
+	items, restErr := services.Items.Search(query)
+	if restErr != nil {
+		utils.MyHttp.ToJsonRestErr(w, restErr)
+		return
+	}
+
+	utils.MyHttp.ToJsonRestResp(w, resp.Success(items))
 }
 
 func (c *itemsController) GetById(w http.ResponseWriter, r *http.Request) {

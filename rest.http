@@ -17,3 +17,15 @@ Content-Type: application/json
 ###
 GET http://localhost:8002/items/dsyDlHoBdOyRw9eOwlLe
 ###
+GET http://localhost:8002/items/search
+Content-Type: application/json
+
+{
+  "equals": [
+    {
+      "field": "seller",
+      "value": 0
+    }
+  ]
+}
+###

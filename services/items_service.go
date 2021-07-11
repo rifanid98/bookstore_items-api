@@ -1,6 +1,7 @@
 package services
 
 import (
+	"bookstore_items-api/domain/esqueries"
 	"bookstore_items-api/domain/items"
 
 	resp "github.com/rifanid98/bookstore_helper-go/response"
@@ -9,6 +10,7 @@ import (
 type IItemService interface {
 	Create(*items.Item) (*items.Item, *resp.RestErr)
 	Get(string) (*items.Item, *resp.RestErr)
+	Search(*esqueries.EsQuery) ([]items.Item, *resp.RestErr)
 	GetById(string) (*items.Item, *resp.RestErr)
 }
 
@@ -37,6 +39,12 @@ func (s *itemService) Get(id string) (*items.Item, *resp.RestErr) {
 	}
 
 	return nil, resp.NotImplemented("")
+}
+
+func (s *itemService) Search(query *esqueries.EsQuery) ([]items.Item, *resp.RestErr) {
+	item := &items.Item{}
+	items, err := item.Search(query)
+	return items, err
 }
 
 func (s *itemService) GetById(id string) (*items.Item, *resp.RestErr) {

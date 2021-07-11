@@ -2,6 +2,7 @@ package items
 
 import (
 	elasticsearch "bookstore_items-api/clients/elastic_search"
+	"bookstore_items-api/domain/esqueries"
 	"encoding/json"
 	"fmt"
 
@@ -54,4 +55,30 @@ func (i *Item) GetById() *resp.RestErr {
 	}
 
 	return nil
+}
+
+func (i *Item) Search(query *esqueries.EsQuery) ([]Item, *resp.RestErr) {
+	res, err := elasticsearch.Client.Search(indexItems, query.Build())
+	if err != nil {
+		return nil, resp.InternalServerError("error when trying to search documents")
+	}
+
+	items := make([]Item, res.TotalHits())
+	for index, hit := range res.Hits.Hits {
+		bytes, err := hit.Source.MarshalJSON()
+
+		if err != nil {
+			fmt.Println(err.Error())
+			return nil, resp.InternalServerError("error when trying to marshal json")
+		}
+
+		var item Item
+		if err := json.Unmarshal(bytes, &item); err != nil {
+			return nil, resp.InternalServerError("error when trying to unmarshal json")
+		}
+		item.Id = hit.Id
+		items[index] = item
+	}
+
+	return items, nil
 }
